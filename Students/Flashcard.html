@@ -1,0 +1,165 @@
+ <!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Flashcard App</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- AngularJS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .flashcard {
+            background-color: white;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+
+        .flashcard-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .flashcard .card-title {
+            text-align: center;
+        }
+
+        .form-container {
+            margin-bottom: 30px;
+        }
+
+        .flashcard-list {
+            margin-top: 20px;
+        }
+
+        .flashcard-item {
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+
+<body ng-app="flashcardApp">
+
+    <div class="flashcard-container" ng-controller="FlashcardController">
+
+        <!-- Form to Add New Flashcards -->
+        <div class="form-container w-100" style="max-width:600px;">
+            <h2 class="text-center">Add New Flashcard</h2>
+            <form ng-submit="addFlashcard()" novalidate>
+                <div class="form-group">
+                    <label for="question">Question</label>
+                    <input type="text" id="question" class="form-control" ng-model="newFlashcard.question" required placeholder="Enter the question">
+                </div>
+                <div class="form-group">
+                    <label for="answer">Answer</label>
+                    <input type="text" id="answer" class="form-control" ng-model="newFlashcard.answer" required placeholder="Enter the answer">
+                </div>
+                <button type="submit" class="btn btn-success btn-block" ng-disabled="!newFlashcard.question || !newFlashcard.answer">Add Flashcard</button>
+            </form>
+        </div>
+
+        <!-- Flashcard Display -->
+        <div ng-if="flashcards.length > 0">
+            <div class="flashcard text-center" ng-show="!flipped">
+                <h3 class="card-title">{{ flashcards[currentIndex].question }}</h3>
+                <button class="btn btn-primary mt-4" ng-click="flipCard()">Flip Card</button>
+            </div>
+
+            <!-- Answer side of the flashcard -->
+            <div class="flashcard text-center" ng-show="flipped">
+                <h3 class="card-title">{{ flashcards[currentIndex].answer }}</h3>
+                <button class="btn btn-primary mt-4" ng-click="flipCard()">Back to Question</button>
+            </div>
+
+            <!-- Navigation buttons -->
+            <div class="text-center mt-4">
+                <button class="btn btn-secondary" ng-click="previousCard()" ng-disabled="currentIndex === 0">Previous</button>
+                <button class="btn btn-secondary" ng-click="nextCard()" ng-disabled="currentIndex === flashcards.length - 1">Next</button>
+            </div>
+        </div>
+
+        <!-- Flashcard List -->
+        <div class="flashcard-list w-100" style="max-width:600px;">
+            <h2 class="text-center">Your Flashcards</h2>
+            <div class="flashcard-item" ng-repeat="flashcard in flashcards track by $index">
+                <div class="flashcard">
+                    <h5 class="card-title">{{ flashcard.question }}</h5>
+                    <p>{{ flashcard.answer }}</p>
+                    <button class="btn btn-danger btn-sm" ng-click="deleteFlashcard($index)">Delete</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        var app = angular.module('flashcardApp', []);
+
+        app.controller('FlashcardController', function($scope) {
+            $scope.flipped = false;
+            $scope.currentIndex = 0;
+            $scope.newFlashcard = {};
+            
+            // Load flashcards from localStorage
+            $scope.flashcards = JSON.parse(localStorage.getItem('flashcards')) || [];
+
+            // Save to localStorage
+            function saveFlashcards() {
+                localStorage.setItem('flashcards', JSON.stringify($scope.flashcards));
+            }
+
+            $scope.flipCard = function() {
+                $scope.flipped = !$scope.flipped;
+            };
+
+            $scope.nextCard = function() {
+                if ($scope.currentIndex < $scope.flashcards.length - 1) {
+                    $scope.currentIndex++;
+                    $scope.flipped = false;
+                }
+            };
+
+            $scope.previousCard = function() {
+                if ($scope.currentIndex > 0) {
+                    $scope.currentIndex--;
+                    $scope.flipped = false;
+                }
+            };
+
+            $scope.addFlashcard = function() {
+                if ($scope.newFlashcard.question && $scope.newFlashcard.answer) {
+                    $scope.flashcards.push({
+                        question: $scope.newFlashcard.question,
+                        answer: $scope.newFlashcard.answer
+                    });
+                    $scope.newFlashcard = {};
+                    saveFlashcards();
+                }
+            };
+
+            $scope.deleteFlashcard = function(index) {
+                $scope.flashcards.splice(index, 1);
+                if ($scope.currentIndex >= $scope.flashcards.length) {
+                    $scope.currentIndex = $scope.flashcards.length - 1;
+                }
+                saveFlashcards();
+            };
+        });
+    </script>
+
+</body>
+</html>
