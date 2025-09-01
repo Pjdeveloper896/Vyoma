@@ -1,0 +1,106 @@
+ <!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="content-type" content="application/xhtml+xml; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Dictionary and Assistant</title>
+
+  <!-- MaterializeCSS 1.3 CDN -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+  <!-- AngularJS CDN -->
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+
+  <style>
+    body {
+      background: #f4f4f4;
+    }
+    .container {
+      margin-top: 40px;
+    }
+    ai {
+      display: block;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body ng-app="aiApp" ng-controller="AIController">
+  <div class="container">
+    <div class="card">
+      <div class="card-content">
+        <span class="card-title center-align">AI Dictionary & Assistant</span>
+
+        <!-- Input -->
+        <div class="input-field">
+          <input id="query" type="text" ng-model="query">
+          <label for="query">Ask AI or type a word</label>
+        </div>
+
+        <!-- Buttons -->
+        <div class="center-align">
+          <button ng-click="getAIResponse()" class="btn waves-effect waves-light blue">
+            Ask AI
+          </button>
+          <button ng-click="getDefinition()" class="btn waves-effect waves-light green">
+            Get Definition
+          </button>
+        </div>
+
+        <!-- AI Response -->
+        <ai ng-if="aiResponse" class="card-panel light-blue lighten-5">
+          <h6 class="blue-text text-darken-2">AI Response:</h6>
+          <p>{{ aiResponse }}</p>
+        </ai>
+
+        <!-- Definition -->
+        <ai ng-if="definition" class="card-panel green lighten-5">
+          <h6 class="green-text text-darken-2">Definition:</h6>
+          <p>{{ definition }}</p>
+        </ai>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // AngularJS Application
+    var app = angular.module('aiApp', []);
+    app.controller('AIController', function($scope, $http) {
+      $scope.query = '';
+      $scope.definition = '';
+      $scope.aiResponse = '';
+
+      // Fetch word definition from the Free Dictionary API
+      $scope.getDefinition = function() {
+        if ($scope.query) {
+          $http.get('https://api.dictionaryapi.dev/api/v2/entries/en/' + $scope.query)
+          .then(function(response) {
+            if (response.data && response.data[0] && response.data[0].meanings) {
+              $scope.definition = response.data[0].meanings[0].definitions[0].definition;
+            } else {
+              $scope.definition = "No definition found.";
+            }
+          }, function(error) {
+            $scope.definition = "Error fetching definition.";
+          });
+        }
+      };
+
+      // Mock AI system that responds to user queries
+      $scope.getAIResponse = function() {
+        if ($scope.query) {
+          if ($scope.query.toLowerCase().includes("hello")) {
+            $scope.aiResponse = "Hello! How can I assist you today?";
+          } else if ($scope.query.toLowerCase().includes("weather")) {
+            $scope.aiResponse = "I cannot check the weather right now, but I can define words for you!";
+          } else if ($scope.query.toLowerCase().includes("define")) {
+            $scope.aiResponse = "It seems you're asking for a definition. Please enter a word above!";
+          } else {
+            $scope.aiResponse = "Sorry, I don't understand that. Try asking for a word definition!";
+          }
+        }
+      };
+    });
+  </script>
+</body>
+</html>
